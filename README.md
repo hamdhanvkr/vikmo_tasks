@@ -502,8 +502,34 @@ Each Product has exactly one Inventory record
 Inventory.product → OneToOneField(Product)
 
 
-      
 
+
+
+------------------------------------------ FRONTEND SETUP --------------------------------------------------
+
+
+1.Create React App using Vite
+
+
+cd vikmo_tasks
+
+cd vikmo_frontend 
+
+npm install  -- install package
+
+npm run dev   -- run command
+
+
+
+React will run at:
+
+http://localhost:5173
+
+
+This functionality only worked ( Products,Orders,Dealers ) Will be display table frontend 
+
+
+------------------------------------------------------------------------------------------------------------
 
 
 By 
