@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import Order, OrderItem
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+
     class Meta:
         model = OrderItem
         fields = ['id', 'product', 'quantity', 'unit_price', 'line_total']
@@ -62,17 +64,50 @@ class OrderSerializer(serializers.ModelSerializer):
         instance.dealer = validated_data.get('dealer', instance.dealer)
         instance.save()
     
-        # REMOVE old items
-        instance.items.all().delete()
+        # Existing items in DB
+        existing_items = {
+            item.id: item for item in instance.items.all()
+        }
     
+        received_item_ids = []
         total = 0
-        for item in items_data:
-            product = item['product']
-            item['unit_price'] = product.price
-            order_item = OrderItem.objects.create(order=instance, **item)
+    
+        for item_data in items_data:
+            item_id = item_data.get('id')
+            product = item_data['product']
+            quantity = item_data['quantity']
+            unit_price = product.price
+    
+            # 🔁 UPDATE EXISTING ITEM
+            if item_id and item_id in existing_items:
+                order_item = existing_items[item_id]
+                order_item.product = product
+                order_item.quantity = quantity
+                order_item.unit_price = unit_price
+                order_item.line_total = unit_price * quantity
+                order_item.save()
+                received_item_ids.append(item_id)
+    
+            # ➕ CREATE NEW ITEM
+            else:
+                order_item = OrderItem.objects.create(
+                    order=instance,
+                    product=product,
+                    quantity=quantity,
+                    unit_price=unit_price,
+                    line_total=unit_price * quantity
+                )
+                received_item_ids.append(order_item.id)
+    
             total += order_item.line_total
+    
+        # ❌ DELETE REMOVED ITEMS
+        for item_id, item in existing_items.items():
+            if item_id not in received_item_ids:
+                item.delete()
     
         instance.total_amount = total
         instance.save()
     
         return instance
+    

@@ -41,7 +41,7 @@ class OrderDetailAPIView(APIView):
 class OrderConfirmAPIView(APIView):
     permission_classes = [AllowAny]
 
-    def put(self, request, pk):
+    def post(self, request, pk):
         order = get_object_or_404(Order, pk=pk)
 
         try:
@@ -60,7 +60,7 @@ class OrderConfirmAPIView(APIView):
 class OrderDeliverAPIView(APIView):
     permission_classes = [AllowAny]
 
-    def put(self, request, pk):
+    def post(self, request, pk):
         order = get_object_or_404(Order, pk=pk)
 
         try:
